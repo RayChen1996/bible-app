@@ -10,7 +10,7 @@ export default function Home() {
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {oldTestament.map((book, index) => (
             <li key={index}>
-              <a href={`/${book.bookName}/${book.totalChapters}`}>
+              <a href={`/${book.bookName}/1`}>
                 <Button className="w-full" variant="outline">
                   {book.bookName}
                 </Button>
@@ -25,7 +25,7 @@ export default function Home() {
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {newTestament.map((book, index) => (
             <li key={index}>
-              <a href={`/${book.bookName}/${book.totalChapters}`}>
+              <a href={`/${book.bookName}/1`}>
                 <Button className="w-full" variant="outline">
                   {book.bookName}
                 </Button>
