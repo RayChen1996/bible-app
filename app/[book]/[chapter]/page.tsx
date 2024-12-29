@@ -1,10 +1,12 @@
 "use client";
 import { useParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Verse {
   book_id: string; // 書卷 ID，例如 "JHN"
@@ -48,34 +50,37 @@ async function fetchBibleVerses(
 export default function Page() {
   const params = useParams();
   const book = Array.isArray(params.book) ? params.book[0] : params.book;
-  const chapter = Array.isArray(params.chapter)
-    ? params.chapter[0]
-    : params.chapter;
-
-  const [currentVerse, setCurrentVerse] = useState(1);
-
-  // const { data, isLoading, refetch } = useQuery<BibleResponse>({
-  //   queryKey: ["bibleVerse", book, chapter, currentVerse],
-  //   queryFn: () =>
-  //     fetchBibleVerse(decodeURI(book), chapter, currentVerse.toString()),
-  //   // keepPreviousData: true, // 保留上一個請求的資料，減少跳動
-  // });
-
+  const [inputChapter, setInputChapter] = useState<string>("");
+  const [currentChapter, setCurrentChapter] = useState(
+    Array.isArray(params.chapter)
+      ? parseInt(params.chapter[0])
+      : parseInt(params.chapter),
+  );
   const { data, isLoading, refetch, isFetching } = useQuery<BibleResponse>({
-    queryKey: ["bibleVerses", book, chapter],
-    queryFn: () => fetchBibleVerses(decodeURI(book), currentVerse.toString()),
+    queryKey: ["bibleVerses", book, currentChapter],
+    queryFn: () => fetchBibleVerses(decodeURI(book), currentChapter.toString()),
   });
 
-  // console.log("Book:", decodeURI(book));
-  // console.log("chapter:", chapter);
-  const handleNext = () => {
-    setCurrentVerse((prev) => prev + 1);
+  const handleNext = useCallback(() => {
+    setCurrentChapter((prev) => prev + 1);
     refetch();
+  }, [refetch, setCurrentChapter]);
+
+  const handlePrevious = useCallback(() => {
+    setCurrentChapter((prev) => prev - 1);
+    refetch();
+  }, [refetch, setCurrentChapter]);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputChapter(e.target.value);
   };
-  const handlePrevious = () => {
-    if (currentVerse > 1) {
-      setCurrentVerse((prev) => prev - 1);
+
+  const handleJumpToChapter = () => {
+    const chapterNumber = parseInt(inputChapter);
+    if (!isNaN(chapterNumber) && chapterNumber > 0) {
+      setCurrentChapter(chapterNumber);
       refetch();
+    } else {
+      alert("請輸入有效的章節數！");
     }
   };
   const loadingData = Array(20).fill(undefined);
@@ -99,14 +104,20 @@ export default function Page() {
 
   return (
     <div className="container mx-auto flex flex-col space-y-4 p-4">
-      <div className="mt-6 flex justify-between space-x-4">
-        <button
-          onClick={handlePrevious}
-          disabled={currentVerse <= 1}
-          className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300 disabled:opacity-50"
-        >
+      <div className="mt-6 flex justify-between">
+        <button onClick={handlePrevious} disabled={currentChapter <= 1}>
           Previous
         </button>
+        <div className="flex items-center space-x-2">
+          <Input
+            type="number"
+            value={inputChapter}
+            onChange={handleInputChange}
+            placeholder="輸入章節"
+            className="rounded-lg border"
+          />
+          <Button onClick={handleJumpToChapter}>跳轉</Button>
+        </div>
         <button
           onClick={handleNext}
           className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
@@ -115,27 +126,38 @@ export default function Page() {
         </button>
       </div>
       <h1 className="text-2xl font-bold">{data?.reference}</h1>
-      <div className="min-h-dvh flex-1 space-y-2">
-        <div className="mt-4">
+      <section className="min-h-dvh flex-1 space-y-2">
+        <div className="my-4">
           {data?.verses.map((verse) => (
-            <p key={verse.verse}>
-              <span className="font-bold">{verse.verse}:</span> {verse.text}
-            </p>
+            <>
+              <div className="my-10 p-5" key={verse.verse}>
+                <span className="mb-10 font-bold">{verse.verse}</span>
+                {verse.text}
+              </div>
+              <hr />
+            </>
           ))}
         </div>
         <p className="mt-4 text-gray-500">
           {data?.translation_name} ({data?.translation_note})
         </p>
-      </div>
+      </section>
 
-      <div className="mt-6 flex justify-between space-x-4">
-        <button
-          onClick={handlePrevious}
-          disabled={currentVerse <= 1}
-          className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300 disabled:opacity-50"
-        >
+      <div className="mt-6 flex justify-between">
+        <button onClick={handlePrevious} disabled={currentChapter <= 1}>
           Previous
         </button>
+        <div className="flex items-center">
+          <Input
+            type="number"
+            value={inputChapter}
+            onChange={handleInputChange}
+            placeholder="輸入章節"
+            className="rounded-lg border"
+          />
+
+          <Button onClick={handleJumpToChapter}>跳轉</Button>
+        </div>
         <button
           onClick={handleNext}
           className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
