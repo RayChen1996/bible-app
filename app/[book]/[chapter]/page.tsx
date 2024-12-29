@@ -10,7 +10,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
-import { ArrowBigLeft, ArrowBigRight, HomeIcon } from "lucide-react";
+import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
+
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+type Checked = DropdownMenuCheckboxItemProps["checked"];
+import {
+  ArrowBigLeft,
+  ArrowBigRight,
+  HomeIcon,
+  MoreHorizontal,
+} from "lucide-react";
 
 //NOTE - Zustand
 import useBibleStore from "@/zustand/useBibleStore";
@@ -106,7 +122,9 @@ export default function Page() {
   }, [currentChapter, refetch, chapter]);
 
   const loadingData = Array(20).fill(undefined);
-
+  const [showStatusBar, setShowStatusBar] = React.useState<Checked>(true);
+  const [showActivityBar, setShowActivityBar] = React.useState<Checked>(false);
+  const [showPanel, setShowPanel] = React.useState<Checked>(false);
   return (
     <div className="container mx-auto flex flex-col space-y-4 px-4">
       <div className="sticky top-2 flex flex-col backdrop-blur-lg">
@@ -156,9 +174,46 @@ export default function Page() {
         <section className="min-h-dvh flex-1 space-y-2">
           <div className="my-4">
             {data?.verses.map((verse) => (
-              <div className="my-10 p-5 text-xl xl:text-3xl" key={verse.verse}>
-                <span className="mb-10 font-bold">{verse.verse}. </span>
-                {verse.text}
+              <div
+                className="my-10 flex justify-between p-5 text-xl xl:text-3xl"
+                key={verse.verse}
+              >
+                <div>
+                  <span className="mb-10 font-bold">{verse.verse}. </span>
+                  {verse.text}
+                </div>
+                <div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">
+                        <MoreHorizontal />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>操作</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuCheckboxItem
+                        // checked={showStatusBar}
+                        onCheckedChange={setShowStatusBar}
+                      >
+                        珍藏
+                      </DropdownMenuCheckboxItem>
+                      {/* <DropdownMenuCheckboxItem
+                      checked={showActivityBar}
+                      onCheckedChange={setShowActivityBar}
+                      disabled
+                    >
+                      Activity Bar
+                    </DropdownMenuCheckboxItem> */}
+                      {/* <DropdownMenuCheckboxItem
+                      checked={showPanel}
+                      onCheckedChange={setShowPanel}
+                    >
+                      Panel
+                    </DropdownMenuCheckboxItem> */}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             ))}
           </div>
