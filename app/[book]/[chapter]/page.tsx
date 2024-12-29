@@ -10,10 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
-import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
+import { ArrowBigLeft, ArrowBigRight, HomeIcon } from "lucide-react";
 
 //NOTE - Zustand
 import useBibleStore from "@/zustand/useBibleStore";
+import Link from "next/link";
 interface Verse {
   book_id: string;
   book_name: string;
@@ -109,7 +110,7 @@ export default function Page() {
   return (
     <div className="container mx-auto flex flex-col space-y-4 px-4">
       <div className="sticky top-2 flex flex-col backdrop-blur-lg">
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-2">
           <button
             onClick={handlePrevious}
             disabled={currentChapter <= 1 || isLoading || isFetching}
@@ -173,14 +174,16 @@ export default function Page() {
           <ArrowBigLeft />
         </button>
         <div className="flex items-center space-x-2">
-          <Input
+          {/* <Input
             type="number"
             value={inputChapter}
             onChange={handleInputChange}
             placeholder="輸入章節"
             className="rounded-lg border"
-          />
-          <Button onClick={handleJumpToChapter}>跳轉</Button>
+          /> */}
+          <Link href={"/"}>
+            <HomeIcon />
+          </Link>
         </div>
         <button
           onClick={handleNext}
