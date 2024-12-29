@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { debounce } from "lodash";
@@ -8,7 +8,10 @@ import { debounce } from "lodash";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
+//NOTE - Zustand
+import useBibleStore from "@/zustand/useBibleStore";
 interface Verse {
   book_id: string;
   book_name: string;
@@ -37,48 +40,67 @@ async function fetchBibleVerses(
 }
 
 export default function Page() {
+  const { chapter, verse, setBible } = useBibleStore();
+
+  console.log(chapter, verse);
   const params = useParams();
+  const { toast } = useToast();
   const book = Array.isArray(params.book) ? params.book[0] : params.book;
+
+  const initialChapter = chapter || 1;
+
   const [inputChapter, setInputChapter] = useState<string>("");
-  const [currentChapter, setCurrentChapter] = useState(
-    Array.isArray(params.chapter)
-      ? parseInt(params.chapter[0])
-      : parseInt(params.chapter),
-  );
+  const [currentChapter, setCurrentChapter] = useState(initialChapter);
+  // useEffect(() => {
+  //   if (!chapter || chapter !== currentChapter) {
+  //     setBible(book, currentChapter, verse);
+  //   }
+  // }, [book, currentChapter, chapter, verse, setBible]);
+
   const { data, isLoading, refetch, isFetching } = useQuery<BibleResponse>({
     queryKey: ["bibleVerses", book, currentChapter],
-    queryFn: () => fetchBibleVerses(decodeURI(book), currentChapter.toString()),
+    queryFn: () =>
+      fetchBibleVerses(decodeURI(book!), currentChapter.toString()),
   });
 
-  const handleNext = useCallback(
-    debounce(() => {
-      setCurrentChapter((prev) => prev + 1);
-      refetch();
-    }, 500),
-    [refetch],
-  );
+  const handleNext = useCallback(() => {
+    setCurrentChapter((prev) => {
+      const newChapter = prev + 1;
+      setBible(book!, newChapter, verse);
+      return newChapter;
+    });
+  }, [book, verse, setBible]);
 
-  const handlePrevious = useCallback(
-    debounce(() => {
-      setCurrentChapter((prev) => prev - 1);
-      refetch();
-    }, 500),
-    [refetch],
-  );
+  const handlePrevious = useCallback(() => {
+    setCurrentChapter((prev) => {
+      const newChapter = Math.max(prev - 1, 1); // 避免章節小於 1
+      setBible(book!, newChapter, verse);
+      return newChapter;
+    });
+  }, [book, verse, setBible]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputChapter(e.target.value);
   };
 
   const handleJumpToChapter = debounce(() => {
-    const chapterNumber = parseInt(inputChapter);
+    const chapterNumber = parseInt(inputChapter, 10);
     if (!isNaN(chapterNumber) && chapterNumber > 0) {
       setCurrentChapter(chapterNumber);
+      setBible(book!, chapterNumber, verse);
       refetch();
     } else {
-      alert("請輸入有效的章節數！");
+      toast({
+        title: "請輸入有效的章節數！",
+        description: "",
+      });
     }
   }, 500);
+
+  useEffect(() => {
+    refetch();
+    setCurrentChapter(chapter);
+  }, [currentChapter, refetch, chapter]);
 
   const loadingData = Array(20).fill(undefined);
 
@@ -101,7 +123,7 @@ export default function Page() {
 
   return (
     <div className="container mx-auto flex flex-col space-y-4 p-4">
-      <div className="mt-6 flex justify-between">
+      <div className="sticky top-0 mt-6 flex justify-between bg-white">
         <button
           onClick={handlePrevious}
           disabled={currentChapter <= 1 || isLoading || isFetching}
@@ -139,6 +161,31 @@ export default function Page() {
           {data?.translation_name} ({data?.translation_note})
         </p>
       </section>
+
+      <div className="sticky bottom-0 mt-6 flex justify-between bg-white">
+        <button
+          onClick={handlePrevious}
+          disabled={currentChapter <= 1 || isLoading || isFetching}
+        >
+          Previous
+        </button>
+        <div className="flex items-center space-x-2">
+          <Input
+            type="number"
+            value={inputChapter}
+            onChange={handleInputChange}
+            placeholder="輸入章節"
+            className="rounded-lg border"
+          />
+          <Button onClick={handleJumpToChapter}>跳轉</Button>
+        </div>
+        <button
+          onClick={handleNext}
+          className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
