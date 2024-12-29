@@ -3,39 +3,28 @@ import { useParams } from "next/navigation";
 import React, { useCallback, useState } from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
+import { debounce } from "lodash";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface Verse {
-  book_id: string; // 書卷 ID，例如 "JHN"
-  book_name: string; // 書卷名稱，例如 "約翰福音"
-  chapter: number; // 章節編號
-  verse: number; // 經文編號
-  text: string; // 經文內容
+  book_id: string;
+  book_name: string;
+  chapter: number;
+  verse: number;
+  text: string;
 }
 
-// 回傳的資料結構型別
 interface BibleResponse {
-  reference: string; // 經文參考，例如 "約翰福音 3:16"
-  verses: Verse[]; // 經文陣列
-  text: string; // 總經文內容
-  translation_id: string; // 翻譯 ID，例如 "cuv"
-  translation_name: string; // 翻譯名稱，例如 "Chinese Union Version"
-  translation_note: string; // 翻譯註記，例如 "Public Domain"
+  reference: string;
+  verses: Verse[];
+  text: string;
+  translation_id: string;
+  translation_name: string;
+  translation_note: string;
 }
-
-// async function fetchBibleVerse(
-//   book: string,
-//   chapter: string,
-//   verse: string,
-// ): Promise<BibleResponse> {
-//   const { data } = await axios.get(
-//     `https://bible-api.com/${book}+${chapter}:${verse}?translation=cuv`,
-//   );
-//   return data;
-// }
 
 async function fetchBibleVerses(
   book: string,
@@ -61,20 +50,27 @@ export default function Page() {
     queryFn: () => fetchBibleVerses(decodeURI(book), currentChapter.toString()),
   });
 
-  const handleNext = useCallback(() => {
-    setCurrentChapter((prev) => prev + 1);
-    refetch();
-  }, [refetch, setCurrentChapter]);
+  const handleNext = useCallback(
+    debounce(() => {
+      setCurrentChapter((prev) => prev + 1);
+      refetch();
+    }, 500),
+    [refetch],
+  );
 
-  const handlePrevious = useCallback(() => {
-    setCurrentChapter((prev) => prev - 1);
-    refetch();
-  }, [refetch, setCurrentChapter]);
+  const handlePrevious = useCallback(
+    debounce(() => {
+      setCurrentChapter((prev) => prev - 1);
+      refetch();
+    }, 500),
+    [refetch],
+  );
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputChapter(e.target.value);
   };
 
-  const handleJumpToChapter = () => {
+  const handleJumpToChapter = debounce(() => {
     const chapterNumber = parseInt(inputChapter);
     if (!isNaN(chapterNumber) && chapterNumber > 0) {
       setCurrentChapter(chapterNumber);
@@ -82,7 +78,8 @@ export default function Page() {
     } else {
       alert("請輸入有效的章節數！");
     }
-  };
+  }, 500);
+
   const loadingData = Array(20).fill(undefined);
 
   if (isLoading || isFetching) {
@@ -105,7 +102,10 @@ export default function Page() {
   return (
     <div className="container mx-auto flex flex-col space-y-4 p-4">
       <div className="mt-6 flex justify-between">
-        <button onClick={handlePrevious} disabled={currentChapter <= 1}>
+        <button
+          onClick={handlePrevious}
+          disabled={currentChapter <= 1 || isLoading || isFetching}
+        >
           Previous
         </button>
         <div className="flex items-center space-x-2">
@@ -129,42 +129,16 @@ export default function Page() {
       <section className="min-h-dvh flex-1 space-y-2">
         <div className="my-4">
           {data?.verses.map((verse) => (
-            <>
-              <div className="my-10 p-5" key={verse.verse}>
-                <span className="mb-10 font-bold">{verse.verse}</span>
-                {verse.text}
-              </div>
-              <hr />
-            </>
+            <div className="my-10 p-5 text-xl xl:text-3xl" key={verse.verse}>
+              <span className="mb-10 font-bold">{verse.verse}. </span>
+              {verse.text}
+            </div>
           ))}
         </div>
         <p className="mt-4 text-gray-500">
           {data?.translation_name} ({data?.translation_note})
         </p>
       </section>
-
-      <div className="mt-6 flex justify-between">
-        <button onClick={handlePrevious} disabled={currentChapter <= 1}>
-          Previous
-        </button>
-        <div className="flex items-center">
-          <Input
-            type="number"
-            value={inputChapter}
-            onChange={handleInputChange}
-            placeholder="輸入章節"
-            className="rounded-lg border"
-          />
-
-          <Button onClick={handleJumpToChapter}>跳轉</Button>
-        </div>
-        <button
-          onClick={handleNext}
-          className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-        >
-          Next
-        </button>
-      </div>
     </div>
   );
 }
