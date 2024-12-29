@@ -78,14 +78,19 @@ export default function Page() {
       refetch();
     }
   };
-  const loadingData = Array(10).fill(undefined);
+  const loadingData = Array(20).fill(undefined);
 
   if (isLoading || isFetching) {
     return (
       <div className="container mx-auto p-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="mb-10 h-10">
+          <Skeleton className="h-11 w-full rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 gap-4">
           {loadingData.map((_, index) => (
-            <Skeleton key={index} className="h-[125px] w-[250px] rounded-xl" />
+            <div key={index} className="h-5">
+              <Skeleton className="h-5 w-full rounded-xl" />
+            </div>
           ))}
         </div>
       </div>
@@ -94,6 +99,21 @@ export default function Page() {
 
   return (
     <div className="container mx-auto flex flex-col space-y-4 p-4">
+      <div className="mt-6 flex justify-between space-x-4">
+        <button
+          onClick={handlePrevious}
+          disabled={currentVerse <= 1}
+          className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <button
+          onClick={handleNext}
+          className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+        >
+          Next
+        </button>
+      </div>
       <h1 className="text-2xl font-bold">{data?.reference}</h1>
       <div className="min-h-dvh flex-1 space-y-2">
         <div className="mt-4">
