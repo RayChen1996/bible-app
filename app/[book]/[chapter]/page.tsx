@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
-import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
+// import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 
 import {
   DropdownMenu,
@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-type Checked = DropdownMenuCheckboxItemProps["checked"];
+// type Checked = DropdownMenuCheckboxItemProps["checked"];
 import {
   ArrowBigLeft,
   ArrowBigRight,
@@ -122,9 +122,9 @@ export default function Page() {
   }, [currentChapter, refetch, chapter]);
 
   const loadingData = Array(20).fill(undefined);
-  const [showStatusBar, setShowStatusBar] = React.useState<Checked>(true);
-  const [showActivityBar, setShowActivityBar] = React.useState<Checked>(false);
-  const [showPanel, setShowPanel] = React.useState<Checked>(false);
+  // const [showStatusBar, setShowStatusBar] = React.useState<Checked>(true);
+  // const [showActivityBar, setShowActivityBar] = React.useState<Checked>(false);
+  // const [showPanel, setShowPanel] = React.useState<Checked>(false);
   return (
     <div className="container mx-auto flex flex-col space-y-4 px-4">
       <div className="sticky top-2 flex flex-col backdrop-blur-lg">
@@ -193,8 +193,8 @@ export default function Page() {
                       <DropdownMenuLabel>操作</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuCheckboxItem
-                        // checked={showStatusBar}
-                        onCheckedChange={setShowStatusBar}
+                      // checked={showStatusBar}
+                      // onCheckedChange={setShowStatusBar}
                       >
                         珍藏
                       </DropdownMenuCheckboxItem>
