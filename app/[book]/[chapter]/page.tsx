@@ -134,7 +134,9 @@ export default function Page() {
             <ArrowBigRight />
           </button>
         </div>
-        <h1 className="text-2xl font-bold">{data?.reference}</h1>
+        <h1 className="mt-2 text-2xl font-bold max-md:text-center">
+          {data?.reference}
+        </h1>
       </div>
 
       {isLoading || isFetching ? (
@@ -174,13 +176,6 @@ export default function Page() {
           <ArrowBigLeft />
         </button>
         <div className="flex items-center space-x-2">
-          {/* <Input
-            type="number"
-            value={inputChapter}
-            onChange={handleInputChange}
-            placeholder="輸入章節"
-            className="rounded-lg border"
-          /> */}
           <Link href={"/"}>
             <HomeIcon />
           </Link>
