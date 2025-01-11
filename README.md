@@ -2,7 +2,7 @@
 
 介接 https://bible-api.com API
 
-###### 網站：[聖經WEB](bible-app-jade.vercel.app/))
+###### 網站：[聖經WEB](https://bible-app-jade.vercel.app/))
 
 ## 技術棧
 
